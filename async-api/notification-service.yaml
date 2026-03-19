@@ -1,82 +1,70 @@
-asyncapi: 3.0.1
+asyncapi: 3.1.0
 
 info:
-  title: Shipping Service API
+  title: Notification Service API
   version: 1.0.0
+  description: Servicio encargado de notificar eventos
+  tags:
+    - name: notifications
 
 servers:
   rabbitmq:
     host: "{host}:{port}"
     protocol: amqp
+    security:
+      - $ref: "#/components/securitySchemes/user-password"
     variables:
       host:
         description: Host del servidor RabbitMQ
         default: localhost
       port:
         description: Puerto de conexión
-        default: 5672
+        default: "5672"
 
 channels:
-  pago.procesado:
-    address: pago.procesado
-    bindings:
-      amqp:
-        exchange:
-          name: pagoExchange
-          type: topic
-        routingKey: pago.procesado
-  envio.creado:
-    address: envio.{envioId}.creado
+  notificacion.enviada:
+    address: notificacion.{notificationId}.enviada
     parameters:
-      envioId:
-        $ref: "#/components/parameters/envioId"
-    bindings:
-      amqp:
-        exchange:
-          name: envioExchange
-          type: topic
-        routingKey: envio.{envioId}.creado
+      notificationId:
+        $ref: "#/components/parameters/notificationId"
+    messages:
+      NotificacionEnviada:
+        $ref: "#/components/messages/NotificacionEnviada"
 
 operations:
-  onPagoProcesado:
-    action: receive
-    channel:
-      $ref: "#/channels/pago.procesado"
-    messages:
-      - $ref: "#/components/messages/PagoProcesado"
-    tags:
-      - name: payments
-
-  sendEnvioCreado:
+  sendNotificacionEnviada:
     action: send
+    summary: Publica notificación enviada
     channel:
-      $ref: "#/channels/envio.creado"
+      $ref: "#/channels/notificacion.enviada"
     messages:
-      - $ref: "#/components/messages/EnvioCreado"
+      - $ref: "#/channels/notificacion.enviada/messages/NotificacionEnviada"
     tags:
-      - name: shipping
+      - name: notifications
 
 components:
+  securitySchemes:
+    user-password:
+      type: userPassword
+
   parameters:
-    envioId:
-      description: El identificador del envío.
-      schema:
-        type: string
+    notificationId:
+      description: El identificador de la notificación.
+
   messages:
-    EnvioCreado:
+    NotificacionEnviada:
+      name: NotificacionEnviada
       payload:
-        $ref: "#/components/schemas/EnvioCreadoPayload"
-    PagoProcesado:
-      payload:
-        $ref: "#/components/schemas/PagoProcesadoPayload"
+        $ref: "#/components/schemas/NotificacionEnviadaPayload"
+
   schemas:
-    EnvioCreadoPayload:
+    NotificacionEnviadaPayload:
       type: object
       properties:
-        envioId:
+        notificationId:
           type: string
-    PagoProcesadoPayload:
-      type: object
-      properties:
-        orderId:
+        userId:
           type: string
+        message:
+          type: string
+      required: [notificationId, userId, message]
