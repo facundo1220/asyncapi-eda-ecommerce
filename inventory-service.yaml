@@ -1,4 +1,4 @@
-asyncapi: 3.0.0
+asyncapi: 3.0.1
 
 info:
   title: Inventory Service API
@@ -9,14 +9,36 @@ tags:
 
 servers:
   rabbitmq:
-    host: localhost:5672
+    host: "{host}:{port}"
     protocol: amqp
+    variables:
+      host:
+        description: Host del servidor RabbitMQ
+        default: localhost
+      port:
+        description: Puerto de conexión
+        default: 5672
 
 channels:
   pago.procesado:
     address: pago.procesado
+    bindings:
+      amqp:
+        exchange:
+          name: pagoExchange
+          type: topic
+        routingKey: pago.procesado
   inventario.descontado:
-    address: inventario.descontado
+    address: inventario.{orderId}.descontado
+    parameters:
+      orderId:
+        $ref: "#/components/parameters/orderId"
+    bindings:
+      amqp:
+        exchange:
+          name: inventarioExchange
+          type: topic
+        routingKey: inventario.{orderId}.descontado
 
 operations:
   onPagoProcesado:
@@ -33,7 +55,16 @@ components:
   messages:
     InventarioDescontado:
       payload:
-        type: object
-        properties:
-          orderId:
-            type: string
+        $ref: "#/components/schemas/InventarioDescontadoPayload"
+
+  schemas:
+    InventarioDescontadoPayload:
+      type: object
+      properties:
+        orderId:
+          type: string
+  parameters:
+    orderId:
+      description: El identificador del pedido.
+      schema:
+        type: string
