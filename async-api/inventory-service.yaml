@@ -1,61 +1,82 @@
-asyncapi: 3.0.1
+asyncapi: 3.1.0
 
 info:
   title: Inventory Service API
   version: 1.0.0
-
-tags:
-  - name: inventory
+  description: Servicio encargado de gestionar inventario
+  tags:
+    - name: inventory
 
 servers:
   rabbitmq:
     host: "{host}:{port}"
     protocol: amqp
+    security:
+      - $ref: "#/components/securitySchemes/user-password"
     variables:
       host:
         description: Host del servidor RabbitMQ
         default: localhost
       port:
         description: Puerto de conexión
-        default: 5672
+        default: "5672"
 
 channels:
   pago.procesado:
-    address: pago.procesado
-    bindings:
-      amqp:
-        exchange:
-          name: pagoExchange
-          type: topic
-        routingKey: pago.procesado
+    address: pago.{orderId}.procesado
+    parameters:
+      orderId:
+        $ref: "#/components/parameters/orderId"
+    messages:
+      PagoProcesado:
+        $ref: "#/components/messages/PagoProcesado"
   inventario.descontado:
     address: inventario.{orderId}.descontado
     parameters:
       orderId:
         $ref: "#/components/parameters/orderId"
-    bindings:
-      amqp:
-        exchange:
-          name: inventarioExchange
-          type: topic
-        routingKey: inventario.{orderId}.descontado
+    messages:
+      InventarioDescontado:
+        $ref: "#/components/messages/InventarioDescontado"
 
 operations:
   onPagoProcesado:
     action: receive
     channel:
       $ref: "#/channels/pago.procesado"
+    messages:
+      - $ref: "#/channels/pago.procesado/messages/PagoProcesado"
+    tags:
+      - name: payments
 
   sendInventarioDescontado:
     action: send
+    summary: Publica inventario descontado
     channel:
       $ref: "#/channels/inventario.descontado"
+    messages:
+      - $ref: "#/channels/inventario.descontado/messages/InventarioDescontado"
+    tags:
+      - name: inventory
 
 components:
+  securitySchemes:
+    user-password:
+      type: userPassword
+
+  parameters:
+    orderId:
+      description: El identificador del pedido.
+
   messages:
     InventarioDescontado:
+      name: InventarioDescontado
       payload:
         $ref: "#/components/schemas/InventarioDescontadoPayload"
+    PagoProcesado:
+      name: PagoProcesado
+      payload:
+        $ref: "#/components/schemas/PagoProcesadoPayload"
 
   schemas:
     InventarioDescontadoPayload:
@@ -63,8 +84,16 @@ components:
       properties:
         orderId:
           type: string
-  parameters:
-    orderId:
-      description: El identificador del pedido.
-      schema:
-        type: string
+        productId:
+          type: string
+        quantity:
+          type: number
+      required: [orderId, productId, quantity]
+    PagoProcesadoPayload:
+      type: object
+      properties:
+        orderId:
+          type: string
+        status:
+          type: string
+      required: [orderId, status]
