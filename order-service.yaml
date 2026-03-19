@@ -1,4 +1,4 @@
-asyncapi: 3.0.0
+asyncapi: 3.1.0
 
 info:
   title: Order Service API
@@ -10,14 +10,30 @@ tags:
 
 servers:
   rabbitmq:
-    host: localhost:5672
+    host: "{host}:{port}"
     protocol: amqp
     security:
-      - user-password: []
+      - $ref: "#/components/securitySchemes/user-password"
+    variables:
+      host:
+        description: Host del servidor RabbitMQ
+        default: localhost
+      port:
+        description: Puerto de conexión
+        default: 5672
 
 channels:
   pedido.creado:
-    address: pedido.creado
+    address: pedido.{orderId}.creado
+    parameters:
+      orderId:
+        $ref: "#/components/parameters/orderId"
+    bindings:
+      amqp:
+        exchange:
+          name: pedidoExchange
+          type: topic
+        routingKey: pedido.{orderId}.creado
 
 operations:
   sendPedidoCreado:
@@ -51,4 +67,10 @@ components:
           type: string
         total:
           type: number
-      required: [orderId, userId]
+      required: [orderId, userId, total]
+
+  parameters:
+    orderId:
+      description: El identificador del pedido.
+      schema:
+        type: string
