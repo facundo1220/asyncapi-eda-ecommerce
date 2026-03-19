@@ -8,5 +8,8 @@
     "asyncapi:docs": ""
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@asyncapi/generator": "^2.11.0"
+  }
 }
