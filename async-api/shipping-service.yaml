@@ -1,81 +1,69 @@
-asyncapi: 3.0.0
+asyncapi: 3.1.0
 
 info:
   title: Shipping Service API
   version: 1.0.0
+  description: Servicio encargado de gestionar envíos
+  tags:
+    - name: shipping
 
 servers:
   rabbitmq:
     host: "{host}:{port}"
     protocol: amqp
+    security:
+      - $ref: "#/components/securitySchemes/user-password"
     variables:
       host:
         description: Host del servidor RabbitMQ
         default: localhost
       port:
         description: Puerto de conexión
-        default: 5672
+        default: "5672"
 
 channels:
-  pago.procesado:
-    address: pago.procesado
-    bindings:
-      amqp:
-        exchange:
-          name: pagoExchange
-          type: topic
-        routingKey: pago.procesado
   envio.creado:
     address: envio.{envioId}.creado
     parameters:
       envioId:
-        $ref: '#/components/parameters/envioId'
-    bindings:
-      amqp:
-        exchange:
-          name: envioExchange
-          type: topic
-        routingKey: envio.{envioId}.creado
+        $ref: "#/components/parameters/envioId"
+    messages:
+      EnvioCreado:
+        $ref: "#/components/messages/EnvioCreado"
 
 operations:
-  onPagoProcesado:
-    action: receive
-    channel:
-      $ref: "#/channels/pago.procesado"
-    messages:
-      - $ref: "#/components/messages/PagoProcesado"
-    tags:
-      - name: payments
-
   sendEnvioCreado:
     action: send
+    summary: Publica envío creado
     channel:
       $ref: "#/channels/envio.creado"
     messages:
-      - $ref: "#/components/messages/EnvioCreado"
+      - $ref: "#/channels/envio.creado/messages/EnvioCreado"
     tags:
       - name: shipping
 components:
+  securitySchemes:
+    user-password:
+      type: userPassword
+
   parameters:
     envioId:
       description: El identificador del envío.
-      schema:
-        type: string
+
   messages:
     EnvioCreado:
+      name: EnvioCreado
       payload:
-        $ref: '#/components/schemas/EnvioCreadoPayload'
-    PagoProcesado:
-      payload:
-        $ref: '#/components/schemas/PagoProcesadoPayload'
+        $ref: "#/components/schemas/EnvioCreadoPayload"
+
   schemas:
     EnvioCreadoPayload:
       type: object
       properties:
         envioId:
           type: string
-    PagoProcesadoPayload:
-      type: object
-      properties:
         orderId:
           type: string
+        address:
+          type: string
+      required: [envioId, orderId, address]
