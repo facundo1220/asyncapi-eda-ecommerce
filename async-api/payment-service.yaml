@@ -1,54 +1,52 @@
-asyncapi: 3.0.1
+asyncapi: 3.1.0
 
 info:
   title: Payment Service API
   version: 1.0.0
-
-tags:
-  - name: payments
+  tags:
+    - name: payments
 
 servers:
   rabbitmq:
     host: "{host}:{port}"
     protocol: amqp
     security:
-      - user-password: []
+      - $ref: "#/components/securitySchemes/user-password"
     variables:
       host:
         description: Host del servidor RabbitMQ
         default: localhost
       port:
         description: Puerto de conexión
-        default: 5672
+        default: "5672"
 
 channels:
   pedido.creado:
     address: pedido.{orderId}.creado
+    messages:
+      PedidoCreado:
+        $ref: "#/components/messages/PedidoCreado"
     parameters:
       orderId:
         $ref: "#/components/parameters/orderId"
-    bindings:
-      amqp:
-        exchange:
-          name: pedidoExchange
-          type: topic
-        routingKey: pedido.{orderId}.creado
+
   pago.procesado:
-    address: pago.procesado
-    bindings:
-      amqp:
-        exchange:
-          name: pagoExchange
-          type: topic
-        routingKey: pago.procesado
+    address: pago.{orderId}.procesado
+    parameters:
+      orderId:
+        $ref: "#/components/parameters/orderId"
+    messages:
+      PagoProcesado:
+        $ref: "#/components/messages/PagoProcesado"
+
   pago.rechazado:
-    address: pago.rechazado
-    bindings:
-      amqp:
-        exchange:
-          name: pagoExchange
-          type: topic
-        routingKey: pago.rechazado
+    address: pago.{orderId}.rechazado
+    parameters:
+      orderId:
+        $ref: "#/components/parameters/orderId"
+    messages:
+      PagoRechazado:
+        $ref: "#/components/messages/PagoRechazado"
 
 operations:
   onPedidoCreado:
@@ -56,21 +54,21 @@ operations:
     channel:
       $ref: "#/channels/pedido.creado"
     messages:
-      - $ref: "#/components/messages/PedidoCreado"
+      - $ref: "#/channels/pedido.creado/messages/PedidoCreado"
 
   sendPagoProcesado:
     action: send
     channel:
       $ref: "#/channels/pago.procesado"
     messages:
-      - $ref: "#/components/messages/PagoProcesado"
+      - $ref: "#/channels/pago.procesado/messages/PagoProcesado"
 
   sendPagoRechazado:
     action: send
     channel:
       $ref: "#/channels/pago.rechazado"
     messages:
-      - $ref: "#/components/messages/PagoRechazado"
+      - $ref: "#/channels/pago.rechazado/messages/PagoRechazado"
 
 components:
   securitySchemes:
@@ -79,8 +77,6 @@ components:
   parameters:
     orderId:
       description: El identificador del pedido.
-      schema:
-        type: string
 
   messages:
     PedidoCreado:
