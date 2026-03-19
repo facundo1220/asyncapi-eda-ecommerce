@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@asyncapi/generator": "^2.11.0"
+    "@asyncapi/generator": "^2.11.0",
+    "@asyncapi/html-template": "^3.5.4"
   }
 }
