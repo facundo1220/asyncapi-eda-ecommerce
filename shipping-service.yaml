@@ -1,0 +1,27 @@
+asyncapi: 3.0.0
+
+info:
+  title: Shipping Service API
+  version: 1.0.0
+
+servers:
+  rabbitmq:
+    host: localhost:5672
+    protocol: amqp
+
+channels:
+  pago.procesado:
+    address: pago.procesado
+  envio.creado:
+    address: envio.creado
+
+operations:
+  onPagoProcesado:
+    action: receive
+    channel:
+      $ref: "#/channels/pago.procesado"
+
+  sendEnvioCreado:
+    action: send
+    channel:
+      $ref: "#/channels/envio.creado"

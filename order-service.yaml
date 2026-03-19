@@ -1,0 +1,54 @@
+asyncapi: 3.0.0
+
+info:
+  title: Order Service API
+  version: 1.0.0
+  description: Servicio encargado de crear pedidos
+
+tags:
+  - name: orders
+
+servers:
+  rabbitmq:
+    host: localhost:5672
+    protocol: amqp
+    security:
+      - user-password: []
+
+channels:
+  pedido.creado:
+    address: pedido.creado
+
+operations:
+  sendPedidoCreado:
+    action: send
+    summary: Publica un pedido creado
+    channel:
+      $ref: "#/channels/pedido.creado"
+    messages:
+      - $ref: "#/components/messages/PedidoCreado"
+    tags:
+      - name: orders
+
+components:
+  securitySchemes:
+    user-password:
+      type: userPassword
+
+  messages:
+    PedidoCreado:
+      name: PedidoCreado
+      payload:
+        $ref: "#/components/schemas/PedidoCreadoPayload"
+
+  schemas:
+    PedidoCreadoPayload:
+      type: object
+      properties:
+        orderId:
+          type: string
+        userId:
+          type: string
+        total:
+          type: number
+      required: [orderId, userId]

@@ -1,0 +1,39 @@
+asyncapi: 3.0.0
+
+info:
+  title: Inventory Service API
+  version: 1.0.0
+
+tags:
+  - name: inventory
+
+servers:
+  rabbitmq:
+    host: localhost:5672
+    protocol: amqp
+
+channels:
+  pago.procesado:
+    address: pago.procesado
+  inventario.descontado:
+    address: inventario.descontado
+
+operations:
+  onPagoProcesado:
+    action: receive
+    channel:
+      $ref: "#/channels/pago.procesado"
+
+  sendInventarioDescontado:
+    action: send
+    channel:
+      $ref: "#/channels/inventario.descontado"
+
+components:
+  messages:
+    InventarioDescontado:
+      payload:
+        type: object
+        properties:
+          orderId:
+            type: string
