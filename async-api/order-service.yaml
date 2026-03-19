@@ -1,12 +1,10 @@
 asyncapi: 3.1.0
-
 info:
   title: Order Service API
   version: 1.0.0
   description: Servicio encargado de crear pedidos
-
-tags:
-  - name: orders
+  tags:
+    - name: orders
 
 servers:
   rabbitmq:
@@ -20,7 +18,7 @@ servers:
         default: localhost
       port:
         description: Puerto de conexión
-        default: 5672
+        default: "5672"
 
 channels:
   pedido.creado:
@@ -28,12 +26,9 @@ channels:
     parameters:
       orderId:
         $ref: "#/components/parameters/orderId"
-    bindings:
-      amqp:
-        exchange:
-          name: pedidoExchange
-          type: topic
-        routingKey: pedido.{orderId}.creado
+    messages:
+      PedidoCreado:
+        $ref: "#/components/messages/PedidoCreado"
 
 operations:
   sendPedidoCreado:
@@ -42,7 +37,7 @@ operations:
     channel:
       $ref: "#/channels/pedido.creado"
     messages:
-      - $ref: "#/components/messages/PedidoCreado"
+      - $ref: "#/channels/pedido.creado/messages/PedidoCreado"
     tags:
       - name: orders
 
@@ -72,5 +67,3 @@ components:
   parameters:
     orderId:
       description: El identificador del pedido.
-      schema:
-        type: string
