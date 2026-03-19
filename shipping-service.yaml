@@ -6,22 +6,76 @@ info:
 
 servers:
   rabbitmq:
-    host: localhost:5672
+    host: "{host}:{port}"
     protocol: amqp
+    variables:
+      host:
+        description: Host del servidor RabbitMQ
+        default: localhost
+      port:
+        description: Puerto de conexión
+        default: 5672
 
 channels:
   pago.procesado:
     address: pago.procesado
+    bindings:
+      amqp:
+        exchange:
+          name: pagoExchange
+          type: topic
+        routingKey: pago.procesado
   envio.creado:
-    address: envio.creado
+    address: envio.{envioId}.creado
+    parameters:
+      envioId:
+        $ref: '#/components/parameters/envioId'
+    bindings:
+      amqp:
+        exchange:
+          name: envioExchange
+          type: topic
+        routingKey: envio.{envioId}.creado
 
 operations:
   onPagoProcesado:
     action: receive
     channel:
       $ref: "#/channels/pago.procesado"
+    messages:
+      - $ref: "#/components/messages/PagoProcesado"
+    tags:
+      - name: payments
 
   sendEnvioCreado:
     action: send
     channel:
       $ref: "#/channels/envio.creado"
+    messages:
+      - $ref: "#/components/messages/EnvioCreado"
+    tags:
+      - name: shipping
+components:
+  parameters:
+    envioId:
+      description: El identificador del envío.
+      schema:
+        type: string
+  messages:
+    EnvioCreado:
+      payload:
+        $ref: '#/components/schemas/EnvioCreadoPayload'
+    PagoProcesado:
+      payload:
+        $ref: '#/components/schemas/PagoProcesadoPayload'
+  schemas:
+    EnvioCreadoPayload:
+      type: object
+      properties:
+        envioId:
+          type: string
+    PagoProcesadoPayload:
+      type: object
+      properties:
+        orderId:
+          type: string
