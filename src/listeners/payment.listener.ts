@@ -1,48 +1,33 @@
-import { Controller } from '@nestjs/common';
-import {
-  EventPattern,
-  Payload,
-  ClientProxy,
-  ClientProxyFactory,
-  Transport,
-} from '@nestjs/microservices';
+import { Controller, Inject } from '@nestjs/common';
+import { ClientProxy, EventPattern, Payload } from '@nestjs/microservices';
 
 @Controller()
 export class PaymentListener {
-  private client: ClientProxy;
+  constructor(
+    @Inject('PAYMENT_SERVICE') private readonly client: ClientProxy,
+  ) {}
 
-  constructor() {
-    this.client = ClientProxyFactory.create({
-      transport: Transport.RMQ,
-      options: {
-        urls: ['amqp://localhost:5672'],
-        queue: 'payments_queue',
-        queueOptions: { durable: false },
-      },
-    });
-  }
+  @EventPattern('order_created')
+  handleOrderCreated(@Payload() data: { orderId: number }) {
+    console.log('Orden recibida en PaymentListener:', data.orderId);
 
-  @EventPattern('pedido.creado')
-  handleOrderCreated(
-    @Payload() data: { orderId: string; userId: string; total: number },
-  ) {
-    console.log('Orden recibida en microservicio:', data);
     const pagoExitoso = Math.random() > 0.5;
+
     if (pagoExitoso) {
-      this.client.emit('pago.procesado', {
+      this.client.emit('pago_procesado', {
         orderId: data.orderId,
         status: 'approved',
       });
-      console.log('Evento emitido: pago.procesado', {
+      console.log('Evento emitido: pago_procesado', {
         orderId: data.orderId,
         status: 'approved',
       });
     } else {
-      this.client.emit('pago.rechazado', {
+      this.client.emit('pago_rechazado', {
         orderId: data.orderId,
         reason: 'Fondos insuficientes',
       });
-      console.log('Evento emitido: pago.rechazado', {
+      console.log('Evento emitido: pago_rechazado', {
         orderId: data.orderId,
         reason: 'Fondos insuficientes',
       });

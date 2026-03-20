@@ -1,6 +1,6 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { AppService } from './services/order/order.service';
 
 class CreateOrderDto {
   orderId: number;
@@ -9,19 +9,18 @@ class CreateOrderDto {
 @ApiTags('order')
 @Controller('order')
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(@Inject('ORDER_SERVICE') private readonly client: ClientProxy) {}
 
   @Post()
   @ApiBody({
     type: CreateOrderDto,
     examples: {
-      example: {
-        value: { orderId: 123 },
-      },
+      example: { value: { orderId: 123 } },
     },
   })
   createOrder(@Body() body: CreateOrderDto) {
-    this.appService.createOrder(body.orderId);
+    this.client.emit('order_created', { orderId: body.orderId });
+    console.log('Evento enviado: order_created', { orderId: body.orderId });
     return { message: 'Evento enviado', orderId: body.orderId };
   }
 }
