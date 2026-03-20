@@ -1,5 +1,6 @@
 import { Controller, Inject } from '@nestjs/common';
 import { ClientProxy, EventPattern, Payload } from '@nestjs/microservices';
+import { appLogger } from '../logger';
 
 @Controller()
 export class PaymentListener {
@@ -9,7 +10,9 @@ export class PaymentListener {
 
   @EventPattern('order_created')
   handleOrderCreated(@Payload() data: { orderId: number }) {
-    console.log('Orden recibida en PaymentListener:', data.orderId);
+    appLogger.info('Orden recibida en PaymentListener', {
+      orderId: data.orderId,
+    });
 
     const pagoExitoso = Math.random() > 0.5;
 
@@ -18,7 +21,7 @@ export class PaymentListener {
         orderId: data.orderId,
         status: 'approved',
       });
-      console.log('Evento emitido: pago_procesado', {
+      appLogger.info('Evento emitido: pago_procesado', {
         orderId: data.orderId,
         status: 'approved',
       });
@@ -27,7 +30,7 @@ export class PaymentListener {
         orderId: data.orderId,
         reason: 'Fondos insuficientes',
       });
-      console.log('Evento emitido: pago_rechazado', {
+      appLogger.info('Evento emitido: pago_rechazado', {
         orderId: data.orderId,
         reason: 'Fondos insuficientes',
       });

@@ -1,5 +1,6 @@
 import { Controller, Inject } from '@nestjs/common';
 import { ClientProxy, EventPattern, Payload } from '@nestjs/microservices';
+import { appLogger } from '../logger';
 
 @Controller()
 export class ShippingListener {
@@ -9,7 +10,7 @@ export class ShippingListener {
 
   @EventPattern('pago_procesado')
   handlePagoProcesado(@Payload() data: { orderId: string; status: string }) {
-    console.log('Pago procesado recibido en ShippingListener:', data);
+    appLogger.info('Pago procesado recibido en ShippingListener', { data });
 
     this.client.emit('envio_creado', {
       envioId: 'e1',
@@ -17,7 +18,7 @@ export class ShippingListener {
       address: 'Calle Falsa 123',
     });
 
-    console.log('Evento emitido: envio_creado', {
+    appLogger.info('Evento emitido: envio_creado', {
       envioId: 'e1',
       orderId: data.orderId,
       address: 'Calle Falsa 123',

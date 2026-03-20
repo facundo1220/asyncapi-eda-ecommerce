@@ -1,6 +1,7 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { appLogger } from './logger';
 
 class CreateOrderDto {
   orderId: number;
@@ -20,7 +21,7 @@ export class AppController {
   })
   createOrder(@Body() body: CreateOrderDto) {
     this.client.emit('order_created', { orderId: body.orderId });
-    console.log('Evento enviado: order_created', { orderId: body.orderId });
+    appLogger.info('Evento enviado: order_created', { orderId: body.orderId });
     return { message: 'Evento enviado', orderId: body.orderId };
   }
 }

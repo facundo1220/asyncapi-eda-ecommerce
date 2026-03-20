@@ -1,5 +1,6 @@
 import { Controller, Inject } from '@nestjs/common';
 import { ClientProxy, EventPattern, Payload } from '@nestjs/microservices';
+import { appLogger } from '../logger';
 
 @Controller()
 export class NotificationListener {
@@ -9,14 +10,14 @@ export class NotificationListener {
 
   @EventPattern('pago_rechazado')
   handlePagoRechazado(@Payload() data: { orderId: string; reason: string }) {
-    console.log('Pago rechazado recibido en NotificationListener:', data);
+    appLogger.info('Pago rechazado recibido en NotificationListener', { data });
 
     this.client.emit('notificacion_enviada', {
       notificationId: 'n1',
       userId: 'u1',
       message: `Pago rechazado para pedido ${data.orderId}: ${data.reason}`,
     });
-    console.log('Evento emitido: notificacion_enviada', {
+    appLogger.info('Evento emitido: notificacion_enviada', {
       notificationId: 'n1',
       userId: 'u1',
       message: `Pago rechazado para pedido ${data.orderId}: ${data.reason}`,

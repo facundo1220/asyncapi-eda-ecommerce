@@ -1,5 +1,6 @@
 import { Controller, Inject } from '@nestjs/common';
 import { ClientProxy, EventPattern, Payload } from '@nestjs/microservices';
+import { appLogger } from '../logger';
 
 @Controller()
 export class InventoryListener {
@@ -9,7 +10,7 @@ export class InventoryListener {
 
   @EventPattern('pago_procesado')
   handlePagoProcesado(@Payload() data: { orderId: number; status: string }) {
-    console.log('Pago procesado recibido en InventoryListener:', data);
+    appLogger.info('Pago procesado recibido en InventoryListener', { data });
 
     this.client.emit('inventario_descontado', {
       orderId: data.orderId,
@@ -17,7 +18,7 @@ export class InventoryListener {
       quantity: 2,
     });
 
-    console.log('Evento emitido: inventario_descontado', {
+    appLogger.info('Evento emitido: inventario_descontado', {
       orderId: data.orderId,
       productId: 'p1',
       quantity: 2,
