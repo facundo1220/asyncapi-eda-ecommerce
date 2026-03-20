@@ -8,5 +8,9 @@
     "asyncapi:docs": ""
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "keywords": [],
+  "dependencies": {
+    "amqplib": "^0.10.9"
+  }
 }
