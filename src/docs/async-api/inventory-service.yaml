@@ -22,20 +22,14 @@ servers:
         default: "5672"
 
 channels:
-  pago.procesado:
-    address: pago.{orderId}.procesado
-    parameters:
-      orderId:
-        $ref: "#/components/parameters/orderId"
+  pago_procesado:
+    address: pago_procesado
     messages:
       PagoProcesado:
         $ref: "#/components/messages/PagoProcesado"
         
-  inventario.descontado:
-    address: inventario.{orderId}.descontado
-    parameters:
-      orderId:
-        $ref: "#/components/parameters/orderId"
+  inventario_descontado:
+    address: inventario_descontado
     messages:
       InventarioDescontado:
         $ref: "#/components/messages/InventarioDescontado"

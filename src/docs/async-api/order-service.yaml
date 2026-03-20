@@ -21,11 +21,8 @@ servers:
         default: "5672"
 
 channels:
-  pedido.creado:
-    address: pedido.{orderId}.creado
-    parameters:
-      orderId:
-        $ref: "#/components/parameters/orderId"
+  order_created:
+    address: order_created
     messages:
       PedidoCreado:
         $ref: "#/components/messages/PedidoCreado"
@@ -35,9 +32,9 @@ operations:
     action: send
     summary: Publica un pedido creado
     channel:
-      $ref: "#/channels/pedido.creado"
+      $ref: "#/channels/order_created"
     messages:
-      - $ref: "#/channels/pedido.creado/messages/PedidoCreado"
+      - $ref: "#/channels/order_created/messages/PedidoCreado"
     tags:
       - name: orders
 
@@ -64,6 +61,3 @@ components:
           type: number
       required: [orderId, userId, total]
 
-  parameters:
-    orderId:
-      description: El identificador del pedido.

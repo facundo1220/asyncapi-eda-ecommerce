@@ -22,14 +22,16 @@ servers:
         default: "5672"
 
 channels:
-  pago.procesado:
-    address: pago.{orderId}.procesado
-    parameters:
-      orderId:
-        $ref: "#/components/parameters/orderId"
+  pago_procesado:
+    address: pago_procesado
     messages:
       PagoProcesado:
         $ref: "#/components/messages/PagoProcesado"
+  pago_rechazado:
+    address: pago_rechazado
+    messages:
+      PagoRechazado:
+        $ref: "#/components/messages/PagoRechazado"
 
   envio.creado:
     address: envio.{envioId}.creado

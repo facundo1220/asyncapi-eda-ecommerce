@@ -22,11 +22,8 @@ servers:
         default: "5672"
 
 channels:
-  pago.rechazado:
-    address: pago.{orderId}.rechazado
-    parameters:
-      orderId:
-        $ref: "#/components/parameters/orderId"
+  pago_rechazado:
+    address: pago_rechazado
     messages:
       PagoRechazado:
         $ref: "#/components/messages/PagoRechazado"

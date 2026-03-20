@@ -29,11 +29,11 @@ channels:
     parameters:
       orderId:
         $ref: "#/components/parameters/orderId"
-
-  pago.procesado:
-    address: pago.{orderId}.procesado
-    parameters:
-      orderId:
+    order_created:
+      address: order_created
+      messages:
+        PedidoCreado:
+          $ref: "#/components/messages/PedidoCreado"
         $ref: "#/components/parameters/orderId"
     messages:
       PagoProcesado:
@@ -55,14 +55,11 @@ operations:
       $ref: "#/channels/pedido.creado"
     messages:
       - $ref: "#/channels/pedido.creado/messages/PedidoCreado"
-
-  sendPagoProcesado:
-    action: send
-    channel:
-      $ref: "#/channels/pago.procesado"
+  pago_procesado:
+    address: pago_procesado
     messages:
-      - $ref: "#/channels/pago.procesado/messages/PagoProcesado"
-
+      PagoProcesado:
+        $ref: "#/components/messages/PagoProcesado"
   sendPagoRechazado:
     action: send
     channel:
@@ -72,14 +69,11 @@ operations:
 
 components:
   securitySchemes:
-    user-password:
-      type: userPassword
-  parameters:
-    orderId:
-      description: El identificador del pedido.
-
-  messages:
-    PedidoCreado:
+  pago_rechazado:
+    address: pago_rechazado
+    messages:
+      PagoRechazado:
+        $ref: "#/components/messages/PagoRechazado"
       payload:
         $ref: "#/components/schemas/PedidoCreadoPayload"
 
