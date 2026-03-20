@@ -1,12 +1,27 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Post, Body } from '@nestjs/common';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { AppService } from './services/order/order.service';
 
-@Controller()
+class CreateOrderDto {
+  orderId: number;
+}
+
+@ApiTags('order')
+@Controller('order')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Post()
+  @ApiBody({
+    type: CreateOrderDto,
+    examples: {
+      example: {
+        value: { orderId: 123 },
+      },
+    },
+  })
+  createOrder(@Body() body: CreateOrderDto) {
+    this.appService.createOrder(body.orderId);
+    return { message: 'Evento enviado', orderId: body.orderId };
   }
 }
