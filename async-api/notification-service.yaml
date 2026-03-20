@@ -22,6 +22,15 @@ servers:
         default: "5672"
 
 channels:
+  pago.rechazado:
+    address: pago.{orderId}.rechazado
+    parameters:
+      orderId:
+        $ref: "#/components/parameters/orderId"
+    messages:
+      PagoRechazado:
+        $ref: "#/components/messages/PagoRechazado"
+
   notificacion.enviada:
     address: notificacion.{notificationId}.enviada
     parameters:
@@ -32,6 +41,16 @@ channels:
         $ref: "#/components/messages/NotificacionEnviada"
 
 operations:
+  onPagoRechazado:
+    action: receive
+    summary: Recibe evento de pago rechazado para notificar
+    channel:
+      $ref: "#/channels/pago.rechazado"
+    messages:
+      - $ref: "#/channels/pago.rechazado/messages/PagoRechazado"
+    tags:
+      - name: payments
+
   sendNotificacionEnviada:
     action: send
     summary: Publica notificación enviada
@@ -50,12 +69,18 @@ components:
   parameters:
     notificationId:
       description: El identificador de la notificación.
+    orderId:
+      description: El identificador del pedido.
 
   messages:
     NotificacionEnviada:
       name: NotificacionEnviada
       payload:
         $ref: "#/components/schemas/NotificacionEnviadaPayload"
+    PagoRechazado:
+      name: PagoRechazado
+      payload:
+        $ref: "#/components/schemas/PagoRechazadoPayload"
 
   schemas:
     NotificacionEnviadaPayload:
@@ -68,3 +93,11 @@ components:
         message:
           type: string
       required: [notificationId, userId, message]
+    PagoRechazadoPayload:
+      type: object
+      properties:
+        orderId:
+          type: string
+        reason:
+          type: string
+      required: [orderId, reason]

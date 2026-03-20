@@ -22,6 +22,15 @@ servers:
         default: "5672"
 
 channels:
+  pago.procesado:
+    address: pago.{orderId}.procesado
+    parameters:
+      orderId:
+        $ref: "#/components/parameters/orderId"
+    messages:
+      PagoProcesado:
+        $ref: "#/components/messages/PagoProcesado"
+
   envio.creado:
     address: envio.{envioId}.creado
     parameters:
@@ -32,6 +41,16 @@ channels:
         $ref: "#/components/messages/EnvioCreado"
 
 operations:
+  onPagoProcesado:
+    action: receive
+    summary: Recibe evento de pago procesado para iniciar envío
+    channel:
+      $ref: "#/channels/pago.procesado"
+    messages:
+      - $ref: "#/channels/pago.procesado/messages/PagoProcesado"
+    tags:
+      - name: payments
+
   sendEnvioCreado:
     action: send
     summary: Publica envío creado
@@ -41,6 +60,7 @@ operations:
       - $ref: "#/channels/envio.creado/messages/EnvioCreado"
     tags:
       - name: shipping
+
 components:
   securitySchemes:
     user-password:
@@ -49,12 +69,18 @@ components:
   parameters:
     envioId:
       description: El identificador del envío.
+    orderId:
+      description: El identificador del pedido.
 
   messages:
     EnvioCreado:
       name: EnvioCreado
       payload:
         $ref: "#/components/schemas/EnvioCreadoPayload"
+    PagoProcesado:
+      name: PagoProcesado
+      payload:
+        $ref: "#/components/schemas/PagoProcesadoPayload"
 
   schemas:
     EnvioCreadoPayload:
@@ -67,3 +93,11 @@ components:
         address:
           type: string
       required: [envioId, orderId, address]
+    PagoProcesadoPayload:
+      type: object
+      properties:
+        orderId:
+          type: string
+        status:
+          type: string
+      required: [orderId, status]

@@ -30,6 +30,7 @@ channels:
     messages:
       PagoProcesado:
         $ref: "#/components/messages/PagoProcesado"
+        
   inventario.descontado:
     address: inventario.{orderId}.descontado
     parameters:
